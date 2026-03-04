@@ -7,6 +7,8 @@ export default function App() {
   const [connected, setConnected] = useState(false);
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
+  const [username, setUsername] = useState('');
+  const [hasUsername, setHasUsername] = useState(false);
 
   useEffect(() => {
     socket.on('connect', () => {
@@ -32,10 +34,42 @@ export default function App() {
   // Function to send a chat message to the server
   const sendMessage = () => {
     if (message.trim()) {
-      socket.emit('chat message', message);
+      socket.emit('chat message', { username, text: message });
       setMessage('');
     }
   };
+
+  const joinChat = () => {
+    if (username.trim()) {
+      setHasUsername(true);
+    }
+  };
+
+  if(!hasUsername) {
+    return (
+      <div className='min-h-screen bg-gray-900 flex items-center justify-center p-4'>
+        <div className='bg-gray-800 rounded-lg shadow-xl w-full max-w-md p-6'>
+          <h1 className="text-2xl text-white font-bold mb-4">
+            Join Chat
+          </h1>
+          <input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && joinChat()}
+            placeholder="Enter your username..."
+            className="w-full flex-1 px-4 py-2 rounded-lg bg-gray-700 text-white outline-none mb-4"
+          />
+          <button
+            onClick={joinChat}
+            className="w-full bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold"
+          >
+            Join
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center">
@@ -47,7 +81,7 @@ export default function App() {
           <div className="bg-gray-700 rounded-lg p-4 h-64 overflow-y-auto mb-4">
             {messages.map((msg, index) => (
               <div key={index} className="text-white mb-2 bg-gray-600 p-2 rounded">
-                {msg}
+                <span className='font-bold text-blue-400'>{msg.username}: </span> {msg.text}
               </div>
             ))}
           </div>

@@ -16,10 +16,10 @@ const PORT = 3000;
 io.on('connection', (socket) => {
   console.log('A user connected! ID:', socket.id);
 
-  socket.on('chat message', (msg) => {
-    console.log('Received message:', msg);
+  socket.on('chat message', (data) => {
+    console.log('Received message:', data);
 
-    io.emit('chat message', msg);
+    io.emit('chat message', data);
   });
 
   socket.on('disconnect', () => {
