@@ -16,6 +16,7 @@ export default function App() {
       setConnected(true);
     });
 
+    // Listen for disconnection events and update the connection status
     socket.on('disconnect', () => {
       console.log('Disconnected from server');
       setConnected(false);
@@ -26,8 +27,14 @@ export default function App() {
       setMessages((prev) => [...prev, msg]);
     });
 
+    // Listen for user notifications (join/leave) and store them in the state
+    socket.on('user notification', (notification) => {
+      setMessages((prev)=> [...prev, { type: 'notification', text: notification }]);
+    });
+
     return ()=> {
       socket.off("chat message");
+      socket.off("user notification");
     };
   }, []);
   
@@ -41,6 +48,7 @@ export default function App() {
 
   const joinChat = () => {
     if (username.trim()) {
+      socket.emit('user joined', username);
       setHasUsername(true);
     }
   };
@@ -80,11 +88,19 @@ export default function App() {
 
           <div className="bg-gray-700 rounded-lg p-4 h-64 overflow-y-auto mb-4">
             {messages.map((msg, index) => (
-              <div key={index} className="text-white mb-2 bg-gray-600 p-2 rounded">
+              <div key={index}>
+                {msg.type === 'notification' ? (
+                  <div className="text-gray-400 text-center text-sm mb-2 italic">
+                    {msg.text}
+                  </div>
+                ) : (
+              <div className="text-white mb-2 bg-gray-600 p-2 rounded">
                 <span className='font-bold text-blue-400'>{msg.username}: </span> {msg.text}
               </div>
-            ))}
-          </div>
+            )}
+            </div>
+          ))}
+         </div> 
 
           <div className="flex gap-2">
             <input

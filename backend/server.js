@@ -16,6 +16,11 @@ const PORT = 3000;
 io.on('connection', (socket) => {
   console.log('A user connected! ID:', socket.id);
 
+  socket.on('user joined', (username) => {
+    socket.username = username;
+    io.emit('user notification', `🟢 ${username} joined the chat`);
+  });
+
   socket.on('chat message', (data) => {
     console.log('Received message:', data);
 
@@ -23,6 +28,9 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
+    if (socket.username) {
+      io.emit('user notification', `🔴 ${socket.username} left the chat`);
+    }
     console.log('A user disconnected! ID:', socket.id);
   });
 });  
