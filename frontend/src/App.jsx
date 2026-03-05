@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, use } from 'react';
 import { io } from 'socket.io-client';
 
 const socket = io('http://localhost:3000');
@@ -9,6 +9,8 @@ export default function App() {
   const [messages, setMessages] = useState([]);
   const [username, setUsername] = useState('');
   const [hasUsername, setHasUsername] = useState(false);
+
+  const messagesEndRef = useRef(null);
 
   useEffect(() => {
     socket.on('connect', () => {
@@ -52,6 +54,14 @@ export default function App() {
       setHasUsername(true);
     }
   };
+
+  // Scroll to the bottom of the chat messages when a new message is added
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   if(!hasUsername) {
     return (
@@ -100,6 +110,7 @@ export default function App() {
             )}
             </div>
           ))}
+            <div ref={messagesEndRef} />
          </div> 
 
           <div className="flex gap-2">
