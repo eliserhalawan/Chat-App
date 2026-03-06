@@ -10,6 +10,20 @@ export default function App() {
   const [username, setUsername] = useState('');
   const [hasUsername, setHasUsername] = useState(false);
 
+  const isImageUrl = (text) => {
+  // Check if it looks like a URL
+  if (!text.startsWith('http')) return false;
+  
+  // Check for image extensions (including gif)
+  const hasImageExtension = /\.(jpeg|jpg|gif|png|webp|svg|apng)/i.test(text);
+  
+  // Check for known image hosting sites
+  const imageHosts = ['unsplash.com', 'imgur.com', 'picsum.photos', 'i.imgur.com', 'giphy.com', 'tenor.com', 'media.giphy.com'];
+  const isImageHost = imageHosts.some(host => text.includes(host));
+  
+  return hasImageExtension || isImageHost;
+};
+
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -43,7 +57,10 @@ export default function App() {
   // Function to send a chat message to the server
   const sendMessage = () => {
     if (message.trim()) {
-      socket.emit('chat message', { username, text: message });
+      const messageData = { username, text: message, isImage: isImageUrl(message) 
+      };
+
+      socket.emit('chat message', messageData);
       setMessage('');
     }
   };
@@ -96,7 +113,7 @@ export default function App() {
           Chat App {connected ? '🟢': '🔴'}
           </h1>
 
-          <div className="bg-gray-700 rounded-lg p-4 h-64 overflow-y-auto mb-4">
+          <div className="bg-gray-700 rounded-lg p-6 h-64 overflow-y-auto mb-4 scrollbar-hide">
             {messages.map((msg, index) => (
               <div key={index}>
                 {msg.type === 'notification' ? (
@@ -105,7 +122,19 @@ export default function App() {
                   </div>
                 ) : (
               <div className="text-white mb-2 bg-gray-600 p-2 rounded">
-                <span className='font-bold text-blue-400'>{msg.username}: </span> {msg.text}
+                <span className='font-bold text-blue-400'>{msg.username}: </span> 
+
+                {msg.isImage ? (
+                  <div className="mt-2">
+                    <img 
+                      src={msg.text}
+                      alt="Shared image"
+                      className="max-w-full max-h-64 rounded-lg object-cover"
+                    />
+                  </div>
+                ) : (
+                  <span className='ml-1'>{msg.text}</span>
+                )}
               </div>
             )}
             </div>
